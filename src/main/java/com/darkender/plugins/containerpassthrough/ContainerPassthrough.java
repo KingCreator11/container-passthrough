@@ -27,7 +27,6 @@ import java.util.Set;
 public class ContainerPassthrough extends JavaPlugin implements Listener
 {
     private Set<EntityType> passthroughEntities;
-    private Set<Material> passthroughBlocks;
     private boolean ignoreInteractEvents = false;
     private ReflectionUtils reflectionUtils;
     
@@ -37,15 +36,6 @@ public class ContainerPassthrough extends JavaPlugin implements Listener
         passthroughEntities = new HashSet<>();
         passthroughEntities.add(EntityType.PAINTING);
         passthroughEntities.add(EntityType.ITEM_FRAME);
-        
-        passthroughBlocks = new HashSet<>();
-        for(Material material : Material.values())
-        {
-            if(material.name().contains("SIGN"))
-            {
-                passthroughBlocks.add(material);
-            }
-        }
         
         getServer().getPluginManager().registerEvents(this, this);
         reflectionUtils = new ReflectionUtils();
@@ -121,28 +111,6 @@ public class ContainerPassthrough extends JavaPlugin implements Listener
         {
             event.setCancelled(true);
         }
-    }
-    
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    private void onPlayerInteract(PlayerInteractEvent event)
-    {
-        if(ignoreInteractEvents || event.getPlayer().isSneaking() ||
-                event.getAction() != Action.RIGHT_CLICK_BLOCK ||
-                event.getClickedBlock() == null ||
-                event.getHand() == EquipmentSlot.OFF_HAND ||
-                !passthroughBlocks.contains(event.getClickedBlock().getType()))
-        {
-            return;
-        }
-        
-        Block blockBehind = event.getClickedBlock().getRelative(event.getBlockFace().getOppositeFace());
-        if(!(blockBehind.getState() instanceof Container) || !canOpenContainer(event.getPlayer(), blockBehind, event.getBlockFace()))
-        {
-            return;
-        }
-        Container container = (Container) blockBehind.getState();
-        tryOpeningContainer(event.getPlayer(), container);
-        event.setCancelled(true);
     }
     
     @EventHandler(ignoreCancelled = true)
